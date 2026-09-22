@@ -1,0 +1,711 @@
+<title>NoCatch Match Lab</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    --paper: #faf7fb;
+    --paper-raised: #ffffff;
+    --ink: #221a2e;
+    --ink-soft: #3a2f49;
+    --accent: #e8536f;
+    --accent-ink: #ffffff;
+    --accent-2: #2d8c82;
+    --accent-2-soft: #e2f2ef;
+    --amber: #b97a1a;
+    --amber-soft: #faf0dd;
+    --line: #ddd3e0;
+    --muted: #6f6280;
+    --shadow: 0 1px 2px rgba(34, 26, 46, 0.06), 0 8px 24px rgba(34, 26, 46, 0.08);
+    --radius: 14px;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #17121c;
+      --paper-raised: #201828;
+      --ink: #f3eef6;
+      --ink-soft: #d9cee2;
+      --accent: #ff6b85;
+      --accent-ink: #1b0e13;
+      --accent-2: #4fbfb0;
+      --accent-2-soft: #123531;
+      --amber: #e2b566;
+      --amber-soft: #332711;
+      --line: #332b3d;
+      --muted: #a79bb5;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #17121c;
+    --paper-raised: #201828;
+    --ink: #f3eef6;
+    --ink-soft: #d9cee2;
+    --accent: #ff6b85;
+    --accent-ink: #1b0e13;
+    --accent-2: #4fbfb0;
+    --accent-2-soft: #123531;
+    --amber: #e2b566;
+    --amber-soft: #332711;
+    --line: #332b3d;
+    --muted: #a79bb5;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { background: var(--paper); }
+  body {
+    margin: 0;
+    padding-inline: clamp(16px, 4vw, 40px);
+    padding-block: 28px 60px;
+    font-family: 'Archivo', 'Segoe UI', system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.5;
+  }
+  [hidden] { display: none !important; }
+
+  h1, h2, h3 { font-family: 'Fraunces', Georgia, serif; text-wrap: balance; margin: 0; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .mono { font-family: 'IBM Plex Mono', monospace; font-variant-numeric: tabular-nums; }
+
+  /* ---------- Shell ---------- */
+  .shell { max-width: 1180px; margin: 0 auto; }
+
+  .hero {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-block: 6px 28px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  .hero h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 600; letter-spacing: -0.01em; }
+  .hero p.lede { max-width: 46ch; color: var(--muted); margin-top: 10px; font-size: 15px; }
+  .status-strip {
+    display: flex; flex-direction: column; gap: 6px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted);
+    border-left: 2px solid var(--accent);
+    padding-left: 14px;
+    min-width: 220px;
+  }
+  .status-strip b { color: var(--ink); font-weight: 600; }
+
+  .console {
+    display: grid;
+    grid-template-columns: minmax(280px, 400px) 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  @media (max-width: 860px) {
+    .console { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Form ---------- */
+  .panel {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px;
+  }
+  .panel h2 { font-size: 19px; font-weight: 600; margin-bottom: 4px; }
+  .panel .sub { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  input[type="number"], select, textarea {
+    width: 100%;
+    font: inherit;
+    font-size: 14px;
+    padding: 9px 10px;
+    border-radius: 9px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink);
+  }
+  textarea { resize: vertical; min-height: 54px; }
+  input:focus, select:focus, textarea:focus, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .chip-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font-size: 12.5px;
+    padding: 6px 11px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink-soft);
+    cursor: pointer;
+    user-select: none;
+  }
+  .chip input { position: absolute; opacity: 0; pointer-events: none; }
+  .chip:has(input:checked) {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 600;
+  }
+
+  .submit-btn {
+    width: 100%;
+    margin-top: 6px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: none;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Archivo', sans-serif;
+    font-weight: 600;
+    font-size: 14.5px;
+    cursor: pointer;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .submit-btn { background: var(--accent); color: var(--accent-ink); }
+  }
+  :root[data-theme="dark"] .submit-btn { background: var(--accent); color: var(--accent-ink); }
+  .submit-btn:active { transform: translateY(1px); }
+
+  /* ---------- Results ---------- */
+  .results-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .results-head h2 { font-size: 19px; font-weight: 600; }
+  .results-head .sub { color: var(--muted); font-size: 13px; }
+
+  .cards { display: flex; flex-direction: column; gap: 14px; }
+
+  .card {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px 20px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 560px) {
+    .card { grid-template-columns: auto 1fr; }
+    .card .score-block { grid-column: 1 / -1; justify-self: start; margin-top: 8px; }
+  }
+
+  .rank-badge {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--accent);
+    width: 40px;
+    text-align: center;
+  }
+  .card-main .mate-id { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 12px; }
+  .card-main h3 { font-size: 18px; margin-top: 2px; }
+  .card-main .meta { color: var(--muted); font-size: 13px; margin-top: 2px; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .tag {
+    font-size: 11.5px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--accent-2-soft);
+    color: var(--accent-2);
+    font-weight: 600;
+  }
+
+  .why { margin-top: 12px; font-size: 13.5px; color: var(--ink-soft); line-height: 1.55; }
+  .why b { color: var(--ink); }
+  .why .neg { color: var(--muted); }
+
+  .contrib-bars { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+  .contrib-row { display: grid; grid-template-columns: 148px 1fr 46px; align-items: center; gap: 8px; font-size: 11.5px; }
+  .contrib-label { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .contrib-track { position: relative; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+  .contrib-fill { position: absolute; top: 0; bottom: 0; border-radius: 4px; }
+  .contrib-fill.pos { background: var(--accent-2); left: 50%; }
+  .contrib-fill.neg { background: var(--amber); right: 50%; }
+  .contrib-val { font-family: 'IBM Plex Mono', monospace; text-align: right; color: var(--muted); }
+
+  .score-block { text-align: right; min-width: 92px; }
+  .score-num { font-family: 'IBM Plex Mono', monospace; font-size: 26px; font-weight: 600; }
+  .score-pill {
+    display: inline-block; margin-top: 6px; font-size: 11px; font-weight: 700;
+    padding: 3px 9px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.03em;
+  }
+  .score-pill.good { background: var(--accent-2-soft); color: var(--accent-2); }
+  .score-pill.borderline { background: var(--amber-soft); color: var(--amber); }
+
+  .empty-note {
+    padding: 24px; text-align: center; color: var(--muted); font-size: 14px;
+    border: 1px dashed var(--line); border-radius: var(--radius);
+  }
+
+  /* ---------- Method note ---------- */
+  .method-note {
+    margin-top: 20px; font-size: 12.5px; color: var(--muted);
+    background: var(--paper-raised); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 14px; line-height: 1.6;
+  }
+  .method-note b { color: var(--ink-soft); }
+
+  /* ---------- Sheet ---------- */
+  .sheet-section { margin-top: 40px; }
+  .sheet-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+  .sheet-head h2 { font-size: 19px; font-weight: 600; }
+  .sheet-toggle {
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted);
+    background: none; border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer;
+  }
+  .sheet-toggle:hover { border-color: var(--accent); color: var(--accent); }
+
+  .sheet-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper-raised);
+    box-shadow: var(--shadow);
+  }
+  table.sheet { border-collapse: collapse; width: 100%; min-width: 760px; font-size: 12.5px; }
+  table.sheet th {
+    position: sticky; top: 0; background: var(--paper-raised);
+    text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.04em; color: var(--muted); border-bottom: 1px solid var(--line);
+    font-family: 'IBM Plex Mono', monospace; font-weight: 600;
+  }
+  table.sheet td { padding: 9px 12px; border-bottom: 1px solid var(--line); color: var(--ink-soft); vertical-align: top; }
+  table.sheet tr.top3 td { background: var(--accent-2-soft); color: var(--ink); }
+  table.sheet tr.top3 td:first-child { font-weight: 700; color: var(--accent-2); }
+  table.sheet td.num { font-family: 'IBM Plex Mono', monospace; text-align: right; }
+  table.sheet td.small { color: var(--muted); font-size: 12px; }
+
+  footer.foot {
+    margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line);
+    color: var(--muted); font-size: 12px;
+  }
+</style>
+
+<div class="shell">
+
+  <div class="hero">
+    <div>
+      <div class="eyebrow">NoCatch &middot; Phase 7 prototype</div>
+      <h1>Match Lab</h1>
+      <p class="lede">Fill in the same onboarding questions NoCatch asks a new user, and see which 3 Mates the trained compatibility model ranks highest &mdash; with the exact reasoning behind each one.</p>
+    </div>
+    <div class="status-strip">
+      <span>MODEL &middot; <b>Logistic Regression</b></span>
+      <span>TARGET &middot; <b>composite quality score</b></span>
+      <span>FEATURES &middot; <b>10</b>, no rule score</span>
+      <span>CANDIDATE POOL &middot; <b>120 Mates</b></span>
+    </div>
+  </div>
+
+  <div class="console">
+    <!-- ---------------- FORM ---------------- -->
+    <form class="panel" id="profile-form">
+      <h2>Your profile</h2>
+      <div class="sub">This is the same information NoCatch collects at sign-up. Loaded with an example profile &mdash; edit anything and re-run.</div>
+
+      <div class="field row2">
+        <div>
+          <label for="age">Age</label>
+          <input type="number" id="age" min="18" max="60" required>
+        </div>
+        <div>
+          <label for="gender">Your gender</label>
+          <select id="gender" required>
+            <option>Female</option>
+            <option>Male</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="preferred_mate_gender">Preferred Mate gender</label>
+        <select id="preferred_mate_gender" required>
+          <option>Female</option>
+          <option>Male</option>
+        </select>
+        <div class="hint">Hard filter &mdash; only Mates matching this are ever ranked (Business Rule BR-1).</div>
+      </div>
+
+      <div class="field">
+        <label for="current_state">Current state</label>
+        <select id="current_state" required></select>
+      </div>
+
+      <div class="field">
+        <label for="preferred_vibe">Preferred vibe</label>
+        <select id="preferred_vibe" required></select>
+      </div>
+
+      <div class="field">
+        <label>Languages you speak</label>
+        <div class="chip-grid" id="languages-group"></div>
+      </div>
+
+      <div class="field">
+        <label>Interests <span class="hint">(pick any number)</span></label>
+        <div class="chip-grid" id="interests-group"></div>
+      </div>
+
+      <div class="field">
+        <label>Conversation preferences</label>
+        <div class="chip-grid" id="conv-group"></div>
+      </div>
+
+      <div class="field">
+        <label for="mind_response">What's on your mind right now? <span class="hint">(optional, not used in scoring)</span></label>
+        <textarea id="mind_response" placeholder="e.g. I want to escape my routine and meet someone new"></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn">Find my top 3 Mates</button>
+    </form>
+
+    <!-- ---------------- RESULTS ---------------- -->
+    <div>
+      <div class="results-head">
+        <div>
+          <h2>Top 3 recommended Mates</h2>
+          <div class="sub" id="results-sub">&mdash;</div>
+        </div>
+      </div>
+      <div class="cards" id="results-cards"></div>
+
+      <div class="method-note">
+        <b>Where these numbers come from:</b> a Logistic Regression model, trained on this project's staged/composite outcome target (Phase 5a-6), scores every candidate as
+        <span class="mono">intercept + &Sigma; coefficient &times; feature value</span> &mdash; shown here as the <b>compatibility index</b>. Positive means the model favours this pairing; 0 is its decision boundary; higher is stronger.
+        The "why" bars show each feature's exact contribution to that number for this pairing: <span class="mono">coefficient &times; (this pair's value &minus; the training-set average)</span> &mdash; the closed-form SHAP value for a linear model, not an approximation.
+        <span class="mono">existing_rule_score</span> is deliberately left out, because it can't be computed for a person who isn't already in NoCatch's historical data.
+        As a brand-new profile, you'd be a <b>cold-start user</b> in the real system (Blueprint &sect;13) &mdash; routed to the content-similarity fallback rather than this full model; this demo runs the full model anyway, for illustration.
+        <br><br>
+        <b>Why an index and not a probability:</b> this model separates the training data almost perfectly (held-out ROC-AUC &asymp; 0.9995) &mdash; expected, since the composite target it predicts was itself built from earlier-stage models trained on very similar features, so recovering it from these same 10 inputs is closer to reconstructing a formula than discovering a hard pattern. In practice that means the model's predicted <i>probability</i> saturates to ~100% for almost every strongly-favoured candidate, hiding real differences between them. The raw index shown here doesn't saturate, so it stays genuinely comparable between candidates &mdash; this is flagged plainly rather than shown as a headline accuracy number.
+      </div>
+    </div>
+  </div>
+
+  <!-- ---------------- SHEET ---------------- -->
+  <div class="sheet-section">
+    <div class="sheet-head">
+      <div>
+        <h2>The Mates sheet</h2>
+        <div class="sub mono" id="sheet-sub" style="color:var(--muted); font-size:13px;">120 candidates &middot; loading&hellip;</div>
+      </div>
+      <button class="sheet-toggle" id="sheet-toggle-btn" type="button">Show all 120 rows</button>
+    </div>
+    <div class="sheet-wrap">
+      <table class="sheet">
+        <thead>
+          <tr>
+            <th>#</th><th>Mate ID</th><th>Age</th><th>Gender</th><th>Languages</th>
+            <th>Interests</th><th>Conversation prefs</th><th>State</th><th>Vibe</th><th>Level</th><th class="num">Compat. index</th>
+          </tr>
+        </thead>
+        <tbody id="sheet-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer class="foot">
+    Synthetic data (<span class="mono">NoCatch_Synthetic_Dataset_v3.xlsx</span>) &middot; illustrative research prototype, not a live production system &middot; SCI701
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const INTERESTS = ["Art & Drawing","Dancing","Fitness & Gym","Food & Cafe","Gaming","Movies & Shows","Music","Photography","Reading","Self-Improvement","Sports","Tech & Gadgets","Travel","Writing / Journaling","Yoga & Meditation"];
+  const CONV_PREFS = ["Career and growth","Dark humour","Deep & philosophical","Life experiences & stories","Light-hearted & funny","Mental health & awareness","Random, free-flow chats","Relationship & Heartbreak"];
+  const LANGUAGES = ["English","Gujarati","Hindi"];
+  const CURRENT_STATES = ["Family Business","Freelancer","Gap Year","Homemaker","Preparing For Exams","Startup","Student","Working"];
+  const VIBES = ["Art & Creative","Entertainment & Media","Finance","Hospitality & Events","Marketing","Sales","Social Media & Content","Sport & Fitness","Tech","Wellness & Self-Care"];
+
+  const FEATURE_LABELS = {
+    age_gap: "the age gap between you",
+    age_score: "your age-based compatibility score",
+    gender_match: "matching your preferred gender",
+    shared_languages: "the languages you share",
+    shared_interests: "your shared interests",
+    shared_conversation_preferences: "shared conversation style",
+    current_state_match: "being in a similar current state",
+    vibe_match: "having a similar preferred vibe",
+    mate_experience_level_ordinal: "the Mate's experience level",
+    shared_languages_missing: "missing language data for this pair"
+  };
+
+  const EXPERIENCE_MAP = { "New": 0, "Intermediate": 1, "Experienced": 2 };
+
+  function splitSet(v) {
+    if (!v) return new Set();
+    return new Set(String(v).split(";").map(s => s.trim()).filter(Boolean));
+  }
+  function intersectCount(a, b) {
+    let n = 0;
+    for (const x of a) if (b.has(x)) n++;
+    return n;
+  }
+  function chipGroup(container, options, name, preselected) {
+    container.innerHTML = "";
+    options.forEach((opt, i) => {
+      const id = name + "-" + i;
+      const label = document.createElement("label");
+      label.className = "chip";
+      label.setAttribute("for", id);
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.id = id;
+      input.value = opt;
+      input.checked = preselected.includes(opt);
+      label.appendChild(input);
+      label.appendChild(document.createTextNode(opt));
+      container.appendChild(label);
+    });
+  }
+  function getChecked(container) {
+    return Array.from(container.querySelectorAll("input:checked")).map(i => i.value);
+  }
+  function fillSelect(select, options, selected) {
+    select.innerHTML = "";
+    options.forEach(opt => {
+      const o = document.createElement("option");
+      o.value = opt; o.textContent = opt;
+      if (opt === selected) o.selected = true;
+      select.appendChild(o);
+    });
+  }
+
+  let MATES = [];
+  let MODEL = null;
+
+  function computeFeatures(user, mate) {
+    const ageGap = Math.abs(user.age - mate.age);
+    const ageScore = 5 / (5 + ageGap);
+    const genderMatch = mate.gender === user.preferred_mate_gender ? 1 : 0;
+
+    const mateLangs = splitSet(mate.languages);
+    let sharedLanguages, sharedLanguagesMissing;
+    if (mateLangs.size === 0) {
+      sharedLanguages = MODEL.shared_languages_training_median;
+      sharedLanguagesMissing = 1;
+    } else {
+      sharedLanguages = intersectCount(user.languages, mateLangs);
+      sharedLanguagesMissing = 0;
+    }
+
+    const sharedInterests = intersectCount(user.interests, splitSet(mate.interests));
+    const sharedConv = intersectCount(user.conv_prefs, splitSet(mate.conversation_preferences));
+    const stateMatch = user.current_state === mate.current_state ? 1 : 0;
+    const vibeMatch = user.preferred_vibe && user.preferred_vibe === mate.vibe ? 1 : 0;
+    const expLevel = EXPERIENCE_MAP[mate.mate_experience_level];
+
+    return {
+      age_gap: ageGap,
+      age_score: ageScore,
+      gender_match: genderMatch,
+      shared_languages: sharedLanguages,
+      shared_interests: sharedInterests,
+      shared_conversation_preferences: sharedConv,
+      current_state_match: stateMatch,
+      vibe_match: vibeMatch,
+      mate_experience_level_ordinal: expLevel,
+      shared_languages_missing: sharedLanguagesMissing
+    };
+  }
+
+  function scoreCandidate(features) {
+    let z = MODEL.intercept;
+    const contributions = {};
+    for (const f of MODEL.feature_order) {
+      const coef = MODEL.coefficients[f];
+      const val = features[f];
+      z += coef * val;
+      contributions[f] = coef * (val - MODEL.feature_training_means[f]);
+    }
+    const prob = 1 / (1 + Math.exp(-z));
+    return { z, prob, contributions };
+  }
+
+  function explanationSentence(contributions) {
+    const entries = Object.entries(contributions).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
+    const pos = entries.filter(([, v]) => v > 0).slice(0, 3).map(([f]) => FEATURE_LABELS[f]);
+    const neg = entries.filter(([, v]) => v < 0).slice(0, 2).map(([f]) => FEATURE_LABELS[f]);
+    let html = "";
+    if (pos.length) html += `<div><b>Recommended mainly because of:</b> ${pos.join(", ")}.</div>`;
+    if (neg.length) html += `<div class="neg">Held back slightly by: ${neg.join(", ")}.</div>`;
+    return html || "<div>No single feature stood out for this pair.</div>";
+  }
+
+  function contribBarsHtml(contributions) {
+    const entries = Object.entries(contributions).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 5);
+    const maxAbs = Math.max(...entries.map(([, v]) => Math.abs(v)), 0.0001);
+    return entries.map(([f, v]) => {
+      const pct = Math.min(50, (Math.abs(v) / maxAbs) * 50);
+      const cls = v >= 0 ? "pos" : "neg";
+      return `<div class="contrib-row">
+        <span class="contrib-label">${FEATURE_LABELS[f]}</span>
+        <span class="contrib-track"><span class="contrib-fill ${cls}" style="width:${pct}%"></span></span>
+        <span class="contrib-val">${v >= 0 ? "+" : ""}${v.toFixed(2)}</span>
+      </div>`;
+    }).join("");
+  }
+
+  function readUserProfile() {
+    return {
+      age: Number(document.getElementById("age").value),
+      gender: document.getElementById("gender").value,
+      preferred_mate_gender: document.getElementById("preferred_mate_gender").value,
+      current_state: document.getElementById("current_state").value,
+      preferred_vibe: document.getElementById("preferred_vibe").value,
+      languages: new Set(getChecked(document.getElementById("languages-group"))),
+      interests: new Set(getChecked(document.getElementById("interests-group"))),
+      conv_prefs: new Set(getChecked(document.getElementById("conv-group")))
+    };
+  }
+
+  let lastScored = [];
+
+  function runMatching() {
+    const user = readUserProfile();
+    const eligible = MATES.filter(m => m.gender === user.preferred_mate_gender);
+
+    const scored = eligible.map(mate => {
+      const features = computeFeatures(user, mate);
+      const { z, prob, contributions } = scoreCandidate(features);
+      return { mate, features, z, prob, contributions };
+    }).sort((a, b) => b.z - a.z);
+
+    lastScored = scored;
+    renderResults(scored.slice(0, 3), eligible.length);
+    renderSheet();
+  }
+
+  function renderResults(top3, poolSize) {
+    document.getElementById("results-sub").textContent =
+      `Ranked from ${poolSize} candidates matching your preferred gender (Business Rule BR-1 applied first).`;
+
+    const wrap = document.getElementById("results-cards");
+    wrap.innerHTML = "";
+    if (!top3.length) {
+      wrap.innerHTML = `<div class="empty-note">No Mates match that gender preference in this synthetic pool.</div>`;
+      return;
+    }
+    top3.forEach((r, i) => {
+      const good = r.z >= 0;
+      const el = document.createElement("div");
+      el.className = "card";
+      el.innerHTML = `
+        <div class="rank-badge">${i + 1}</div>
+        <div class="card-main">
+          <div class="mate-id">${r.mate.mate_id}</div>
+          <h3>${r.mate.age}, ${r.mate.gender} &middot; ${r.mate.mate_experience_level}</h3>
+          <div class="meta">${r.mate.current_state} &middot; ${r.mate.vibe}</div>
+          <div class="tags">
+            ${splitSetArr(r.mate.interests).slice(0, 4).map(t => `<span class="tag">${t}</span>`).join("")}
+          </div>
+          <div class="why">${explanationSentence(r.contributions)}</div>
+          <div class="contrib-bars">${contribBarsHtml(r.contributions)}</div>
+        </div>
+        <div class="score-block">
+          <div class="score-num">${r.z >= 0 ? "+" : ""}${r.z.toFixed(1)}</div>
+          <div class="hint" style="margin-bottom:6px;">compatibility index</div>
+          <div class="score-pill ${good ? "good" : "borderline"}">${good ? "Good match" : "Borderline"}</div>
+        </div>
+      `;
+      wrap.appendChild(el);
+    });
+  }
+
+  function splitSetArr(v) { return Array.from(splitSet(v)); }
+
+  let sheetShowAll = false;
+
+  function renderSheet() {
+    const body = document.getElementById("sheet-body");
+    const top3Ids = new Set(lastScored.slice(0, 3).map(r => r.mate.mate_id));
+    const rows = sheetShowAll ? lastScored : lastScored.slice(0, 10);
+    document.getElementById("sheet-sub").textContent =
+      `${lastScored.length} eligible candidates, ranked by compatibility index. ${sheetShowAll ? "Showing all." : "Showing top 10."} Top 3 highlighted.`;
+
+    body.innerHTML = rows.map((r, i) => {
+      const isTop3 = top3Ids.has(r.mate.mate_id);
+      return `<tr class="${isTop3 ? "top3" : ""}">
+        <td>${isTop3 ? "&#9733; " + (i + 1) : i + 1}</td>
+        <td class="mono">${r.mate.mate_id}</td>
+        <td class="num">${r.mate.age}</td>
+        <td>${r.mate.gender}</td>
+        <td class="small">${r.mate.languages}</td>
+        <td class="small">${r.mate.interests}</td>
+        <td class="small">${r.mate.conversation_preferences}</td>
+        <td class="small">${r.mate.current_state}</td>
+        <td class="small">${r.mate.vibe}</td>
+        <td class="small">${r.mate.mate_experience_level}</td>
+        <td class="num mono">${r.z >= 0 ? "+" : ""}${r.z.toFixed(1)}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  document.getElementById("sheet-toggle-btn").addEventListener("click", function () {
+    sheetShowAll = !sheetShowAll;
+    this.textContent = sheetShowAll ? "Show top 10 only" : "Show all 120 rows";
+    renderSheet();
+  });
+
+  document.getElementById("profile-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    runMatching();
+  });
+
+  function seedExampleProfile() {
+    document.getElementById("age").value = 26;
+    document.getElementById("gender").value = "Female";
+    document.getElementById("preferred_mate_gender").value = "Male";
+    fillSelect(document.getElementById("current_state"), CURRENT_STATES, "Working");
+    fillSelect(document.getElementById("preferred_vibe"), VIBES, "Tech");
+    chipGroup(document.getElementById("languages-group"), LANGUAGES, "lang", ["English", "Hindi"]);
+    chipGroup(document.getElementById("interests-group"), INTERESTS, "int", ["Music", "Travel", "Reading", "Self-Improvement"]);
+    chipGroup(document.getElementById("conv-group"), CONV_PREFS, "conv", ["Deep & philosophical", "Life experiences & stories"]);
+    document.getElementById("mind_response").value = "I want to meet someone who actually listens and isn't just small talk.";
+  }
+
+  async function boot() {
+    try {
+      const [mates, model] = await Promise.all([
+        fetch("mates_data.json").then(r => r.json()),
+        fetch("demo_model.json").then(r => r.json())
+      ]);
+      MATES = mates;
+      MODEL = model;
+      // Standard 50% decision boundary for a binary classifier. Not the same
+      // number as composite_binary_threshold (0.139) -- that's the cutoff on
+      // the raw composite_target scale used to LABEL training rows as
+      // "good"/"not good" before training; this model's OUTPUT is a
+      // probability that a row carries that label, so 0.5 is the correct
+      // threshold to compare it against, not 0.139.
+      MODEL.composite_binary_threshold_as_prob = 0.5;
+
+      seedExampleProfile();
+      runMatching();
+    } catch (err) {
+      document.getElementById("results-cards").innerHTML =
+        `<div class="empty-note">Could not load the Mates data or model file. (${err.message})</div>`;
+    }
+  }
+
+  boot();
+})();
+</script>

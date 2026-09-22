@@ -1,0 +1,50 @@
+{
+  "model": "Logistic Regression -- composite-target, without existing_rule_score (Ablation A variant)",
+  "feature_order": [
+    "age_gap",
+    "age_score",
+    "gender_match",
+    "shared_languages",
+    "shared_interests",
+    "shared_conversation_preferences",
+    "current_state_match",
+    "vibe_match",
+    "mate_experience_level_ordinal",
+    "shared_languages_missing"
+  ],
+  "coefficients": {
+    "age_gap": 0.041996248547395434,
+    "age_score": 15.700956910323406,
+    "gender_match": 10.87197150636595,
+    "shared_languages": 3.9314678265731615,
+    "shared_interests": 8.999300268375523,
+    "shared_conversation_preferences": 10.01644827560019,
+    "current_state_match": 7.864154281613937,
+    "vibe_match": 8.58098198056433,
+    "mate_experience_level_ordinal": 2.198955641228022,
+    "shared_languages_missing": -3.205712105130418
+  },
+  "intercept": -53.36170346104048,
+  "feature_training_means": {
+    "age_gap": 3.546014917093016,
+    "age_score": 0.6682486593108551,
+    "gender_match": 0.7891265487271159,
+    "shared_languages": 1.5055168587807435,
+    "shared_interests": 1.3720027121987302,
+    "shared_conversation_preferences": 1.1113850705788078,
+    "current_state_match": 0.1699439067989891,
+    "vibe_match": 0.1279664673611539,
+    "mate_experience_level_ordinal": 1.1521913332922393,
+    "shared_languages_missing": 0.03834062750416076
+  },
+  "shared_languages_training_median": 1.0,
+  "composite_binary_threshold": 0.1390807611553438,
+  "test_set_roc_auc": 0.9995092022734163,
+  "n_train_rows": 16223,
+  "n_test_rows": 4040,
+  "experience_level_map": {
+    "New": 0,
+    "Intermediate": 1,
+    "Experienced": 2
+  }
+}
