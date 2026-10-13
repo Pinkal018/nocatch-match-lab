@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>NoCatch Match Lab</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
@@ -292,6 +294,111 @@
   table.sheet td.num { font-family: 'IBM Plex Mono', monospace; text-align: right; }
   table.sheet td.small { color: var(--muted); font-size: 12px; }
 
+  /* ---------- Model picker ---------- */
+  :root {
+    --m-lr: #e8536f; --m-dt: #7a5bd0; --m-rf: #2d8c82; --m-age: #b97a1a; --m-rule: #5d6b82;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --m-lr: #ff6b85; --m-dt: #a98cf0; --m-rf: #4fbfb0; --m-age: #e2b566; --m-rule: #9aa8c0;
+    }
+  }
+  :root[data-theme="dark"] {
+    --m-lr: #ff6b85; --m-dt: #a98cf0; --m-rf: #4fbfb0; --m-age: #e2b566; --m-rule: #9aa8c0;
+  }
+
+  .picker { margin-bottom: 22px; }
+  .picker-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .link-btn {
+    background: none; border: none; padding: 2px 4px; cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--muted);
+  }
+  .link-btn:hover { color: var(--accent); }
+  .model-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+  .model-chip {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
+    background: var(--paper); cursor: pointer; user-select: none;
+  }
+  .model-chip input { width: 16px; height: 16px; margin: 0; accent-color: var(--mc); flex-shrink: 0; }
+  .model-chip:has(input:checked) { border-color: var(--mc); box-shadow: inset 3px 0 0 var(--mc); background: var(--paper-raised); }
+  .model-chip:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .model-chip .mc-name { font-size: 13.5px; font-weight: 600; line-height: 1.25; }
+  .model-chip .mc-kind { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+  .model-chip.unavailable { opacity: 0.5; cursor: not-allowed; }
+
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--mc); flex-shrink: 0; }
+
+  /* ---------- Agreement ---------- */
+  .agree-wrap { margin-bottom: 22px; }
+  .agree-wrap h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .agree-wrap .sub { color: var(--muted); font-size: 12.5px; margin-bottom: 10px; }
+  table.agree { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+  table.agree th {
+    text-align: center; padding: 8px 6px; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--muted); border-bottom: 1px solid var(--line); font-family: 'IBM Plex Mono', monospace; font-weight: 600;
+  }
+  table.agree th:first-child, table.agree td:first-child { text-align: left; }
+  table.agree td { padding: 8px 6px; border-bottom: 1px solid var(--line); text-align: center; color: var(--ink-soft); }
+  table.agree td .mid { font-family: 'IBM Plex Mono', monospace; font-weight: 600; color: var(--ink); }
+  table.agree td .msub { color: var(--muted); font-size: 11.5px; }
+  .rank-pip {
+    display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--mc); color: var(--paper); font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 12px;
+  }
+  .rank-none { color: var(--line); }
+  .consensus { font-family: 'IBM Plex Mono', monospace; font-size: 12px; }
+  .consensus.all { color: var(--accent-2); font-weight: 700; }
+
+  /* ---------- Per-model blocks ---------- */
+  .model-block {
+    border: 1px solid var(--line); border-left: 4px solid var(--mc);
+    border-radius: var(--radius); background: var(--paper-raised); box-shadow: var(--shadow);
+    padding: 16px 18px; margin-bottom: 16px;
+  }
+  .mb-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; margin-bottom: 4px; }
+  .mb-head h3 { font-size: 17px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .mb-metric { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--muted); }
+  .mb-metric b { color: var(--ink); }
+  .mb-desc { color: var(--muted); font-size: 12.5px; margin-bottom: 12px; }
+  .mb-tie { color: var(--amber); font-size: 12px; margin: -6px 0 10px; }
+
+  .mini-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 10px; }
+  .mini {
+    border: 1px solid var(--line); border-radius: 11px; background: var(--paper);
+    padding: 12px 13px; min-width: 0;
+  }
+  .mini-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .mini-rank { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 600; color: var(--mc); line-height: 1; }
+  .mini .mate-id { font-family: 'IBM Plex Mono', monospace; color: var(--muted); font-size: 11.5px; }
+  .mini h4 { margin: 2px 0 0; font-size: 14.5px; font-weight: 600; }
+  .mini .meta { color: var(--muted); font-size: 12px; }
+  .mini-score { text-align: right; }
+  .mini-score .num { font-family: 'IBM Plex Mono', monospace; font-size: 18px; font-weight: 600; }
+  .mini-score .unit { font-size: 10.5px; color: var(--muted); }
+  .mini .why { font-size: 12.5px; margin-top: 8px; }
+  .mini .contrib-row { grid-template-columns: 78px minmax(30px, 1fr) 40px; font-size: 11px; }
+  .mini .score-pill { margin-top: 4px; font-size: 10px; padding: 2px 7px; }
+  .path-rule { margin-top: 8px; font-size: 11.5px; color: var(--muted); }
+  .path-rule summary { cursor: pointer; color: var(--ink-soft); font-weight: 600; }
+  .path-rule ol { margin: 6px 0 0; padding-left: 18px; }
+  .path-rule li { margin-bottom: 2px; }
+
+  table.mtable { border-collapse: collapse; width: 100%; margin-top: 8px; font-size: 12px; }
+  table.mtable th, table.mtable td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: right; }
+  table.mtable th:first-child, table.mtable td:first-child { text-align: left; }
+  table.mtable th { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  table.mtable td { font-family: 'IBM Plex Mono', monospace; }
+  table.mtable td:first-child { font-family: 'Archivo', sans-serif; }
+  table.mtable tr.off td { opacity: 0.45; }
+  .method-note ul { margin: 6px 0 0; padding-left: 18px; }
+  .method-note li { margin-bottom: 6px; }
+
+  .sheet-controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .sheet-controls select { width: auto; font-size: 12.5px; padding: 6px 8px; }
+  table.sheet td.rk { text-align: center; font-family: 'IBM Plex Mono', monospace; }
+  table.sheet td.rk.hit { font-weight: 700; color: var(--mc); }
+
   footer.foot {
     margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--line);
     color: var(--muted); font-size: 12px;
@@ -304,11 +411,11 @@
     <div>
       <div class="eyebrow">NoCatch &middot; Phase 7 prototype</div>
       <h1>Match Lab</h1>
-      <p class="lede">Fill in the same onboarding questions NoCatch asks a new user, and see which 3 Mates the trained compatibility model ranks highest &mdash; with the exact reasoning behind each one.</p>
+      <p class="lede">Fill in the same onboarding questions NoCatch asks a new user, pick which models to compare, and see the 3 Mates each one ranks highest &mdash; with the exact reasoning behind each pick.</p>
     </div>
     <div class="status-strip">
-      <span>MODEL &middot; <b>Logistic Regression</b></span>
-      <span>TARGET &middot; <b>composite quality score</b></span>
+      <span>MODELS &middot; <b>3 ML + 2 baselines</b></span>
+      <span>ML TARGET &middot; <b>composite quality score</b></span>
       <span>FEATURES &middot; <b>10</b>, no rule score</span>
       <span>CANDIDATE POOL &middot; <b>120 Mates</b></span>
     </div>
@@ -378,22 +485,38 @@
 
     <!-- ---------------- RESULTS ---------------- -->
     <div>
+      <div class="panel picker">
+        <div class="picker-head">
+          <h2>Models to compare</h2>
+          <div><button type="button" class="link-btn" id="pick-all">Select all</button> &middot; <button type="button" class="link-btn" id="pick-none">Clear</button></div>
+        </div>
+        <div class="sub">Tick one or more. Each ranks the same candidate pool for your profile; results update as you tick.</div>
+        <div class="model-chips" id="model-chips"></div>
+      </div>
+
       <div class="results-head">
         <div>
           <h2>Top 3 recommended Mates</h2>
           <div class="sub" id="results-sub">&mdash;</div>
         </div>
       </div>
-      <div class="cards" id="results-cards"></div>
+      <div id="agreement"></div>
+      <div id="model-blocks"></div>
 
       <div class="method-note">
-        <b>Where these numbers come from:</b> a Logistic Regression model, trained on this project's staged/composite outcome target (Phase 5a-6), scores every candidate as
-        <span class="mono">intercept + &Sigma; coefficient &times; feature value</span> &mdash; shown here as the <b>compatibility index</b>. Positive means the model favours this pairing; 0 is its decision boundary; higher is stronger.
-        The "why" bars show each feature's exact contribution to that number for this pairing: <span class="mono">coefficient &times; (this pair's value &minus; the training-set average)</span> &mdash; the closed-form SHAP value for a linear model, not an approximation.
-        <span class="mono">existing_rule_score</span> is deliberately left out, because it can't be computed for a person who isn't already in NoCatch's historical data.
-        As a brand-new profile, you'd be a <b>cold-start user</b> in the real system (Blueprint &sect;13) &mdash; routed to the content-similarity fallback rather than this full model; this demo runs the full model anyway, for illustration.
-        <br><br>
-        <b>Why an index and not a probability:</b> this model separates the training data almost perfectly (held-out ROC-AUC &asymp; 0.9995) &mdash; expected, since the composite target it predicts was itself built from earlier-stage models trained on very similar features, so recovering it from these same 10 inputs is closer to reconstructing a formula than discovering a hard pattern. In practice that means the model's predicted <i>probability</i> saturates to ~100% for almost every strongly-favoured candidate, hiding real differences between them. The raw index shown here doesn't saturate, so it stays genuinely comparable between candidates &mdash; this is flagged plainly rather than shown as a headline accuracy number.
+        <b>Where these numbers come from</b>
+        <ul>
+          <li><b>Logistic Regression</b> (composite target, Phase 5a&ndash;6) scores each candidate as <span class="mono">intercept + &Sigma; coefficient &times; feature value</span>, shown as the <b>compatibility index</b> (0 = decision boundary). Bars: <span class="mono">coefficient &times; (value &minus; training mean)</span>, the closed-form SHAP value for a linear model. It's shown as an index, not a probability, because this model separates the data almost perfectly (held-out ROC-AUC &asymp; 0.9995), so its probabilities saturate near 100% and hide real differences between candidates. That's expected: the composite target was itself built from earlier-stage models on very similar features.</li>
+          <li><b>Decision Tree</b> and <b>Random Forest</b> (same target and features) give the probability of a high-quality match. Bars are exact <b>TreeSHAP</b> values in percentage points, computed in your browser with the same algorithm as <span class="mono">shap.TreeExplainer</span> (checked against it to within 10<sup>&minus;6</sup>). The Decision Tree is shallow (depth 5), so you can also read the exact rule path it followed. Because it has few leaves, many Mates tie; ties are broken by Mate ID.</li>
+          <li><b>Age only</b> is the Phase 4 age-based baseline: smallest age gap first, nothing else considered.</li>
+          <li><b>Current rule</b> stands in for NoCatch's existing rule-based score (<span class="mono">existing_rule_score</span>). Its exact formula isn't available, so this demo uses a linear <b>reconstruction</b> fitted to it from the same 10 features (held-out R&sup2; <span class="mono" id="rule-r2">&mdash;</span>). The ranking numbers below are for the original rule score.</li>
+        </ul>
+        <div style="margin-top:10px;"><b>Held-out ranking quality</b> (user-level test split, booking outcome &mdash; same setup as the Phase 4 / 5b tables):</div>
+        <table class="mtable" id="metrics-table"></table>
+        <div style="margin-top:10px;">
+          None of the ML models use <span class="mono">existing_rule_score</span>, because it can't be computed for a person who isn't already in NoCatch's historical data.
+          As a brand-new profile, you'd be a <b>cold-start user</b> in the real system (Blueprint &sect;13), routed to the content-similarity fallback; this demo runs the full models anyway, for illustration.
+        </div>
       </div>
     </div>
   </div>
@@ -405,16 +528,15 @@
         <h2>The Mates sheet</h2>
         <div class="sub mono" id="sheet-sub" style="color:var(--muted); font-size:13px;">120 candidates &middot; loading&hellip;</div>
       </div>
-      <button class="sheet-toggle" id="sheet-toggle-btn" type="button">Show all 120 rows</button>
+      <div class="sheet-controls">
+        <label class="mono" style="font-size:12px;color:var(--muted);" for="sheet-sort">Sort by</label>
+        <select id="sheet-sort"></select>
+        <button class="sheet-toggle" id="sheet-toggle-btn" type="button">Show all rows</button>
+      </div>
     </div>
     <div class="sheet-wrap">
       <table class="sheet">
-        <thead>
-          <tr>
-            <th>#</th><th>Mate ID</th><th>Age</th><th>Gender</th><th>Languages</th>
-            <th>Interests</th><th>Conversation prefs</th><th>State</th><th>Vibe</th><th>Level</th><th class="num">Compat. index</th>
-          </tr>
-        </thead>
+        <thead id="sheet-head"></thead>
         <tbody id="sheet-body"></tbody>
       </table>
     </div>
@@ -425,6 +547,7 @@
   </footer>
 </div>
 
+<script src="tree_shap.js"></script>
 <script>
 (function () {
   "use strict";
@@ -447,13 +570,47 @@
     mate_experience_level_ordinal: "the Mate's experience level",
     shared_languages_missing: "missing language data for this pair"
   };
+  // Wording when a feature pulls the score DOWN for this pair (it's below the training average).
+  const NEG_LABELS = {
+    age_gap: "the age gap between you",
+    age_score: "a weaker age match",
+    gender_match: "not matching your preferred gender",
+    shared_languages: "fewer shared languages than usual",
+    shared_interests: "fewer shared interests than usual",
+    shared_conversation_preferences: "less overlap in conversation style",
+    current_state_match: "being in a different current state",
+    vibe_match: "not sharing your preferred vibe",
+    mate_experience_level_ordinal: "the Mate's experience level",
+    shared_languages_missing: "missing language data for this pair"
+  };
+  const SHORT_LABELS = {
+    age_gap: "Age gap",
+    age_score: "Age score",
+    gender_match: "Gender",
+    shared_languages: "Languages",
+    shared_interests: "Interests",
+    shared_conversation_preferences: "Conv. style",
+    current_state_match: "Current state",
+    vibe_match: "Vibe",
+    mate_experience_level_ordinal: "Experience",
+    shared_languages_missing: "Lang. missing"
+  };
+  const SHORT_CONDITION_LABELS = {
+    shared_languages: "Shared languages",
+    shared_interests: "Shared interests",
+    shared_conversation_preferences: "Shared conversation prefs",
+    age_gap: "Age gap (years)",
+    age_score: "Age score"
+  };
 
   const EXPERIENCE_MAP = { "New": 0, "Intermediate": 1, "Experienced": 2 };
+  const EXPERIENCE_NAMES = ["New", "Intermediate", "Experienced"];
 
   function splitSet(v) {
     if (!v) return new Set();
     return new Set(String(v).split(";").map(s => s.trim()).filter(Boolean));
   }
+  function splitSetArr(v) { return Array.from(splitSet(v)); }
   function intersectCount(a, b) {
     let n = 0;
     for (const x of a) if (b.has(x)) n++;
@@ -488,9 +645,12 @@
       select.appendChild(o);
     });
   }
+  function signed(v, digits) { return (v >= 0 ? "+" : "") + v.toFixed(digits); }
+  function fmt3(v) { return v == null ? "&mdash;" : v.toFixed(3); }
 
   let MATES = [];
-  let MODEL = null;
+  let LR = null;       // demo_model.json -- also supplies feature order + language median
+  let SUMMARY = null;  // comparison_summary.json
 
   function computeFeatures(user, mate) {
     const ageGap = Math.abs(user.age - mate.age);
@@ -500,7 +660,7 @@
     const mateLangs = splitSet(mate.languages);
     let sharedLanguages, sharedLanguagesMissing;
     if (mateLangs.size === 0) {
-      sharedLanguages = MODEL.shared_languages_training_median;
+      sharedLanguages = LR.shared_languages_training_median;
       sharedLanguagesMissing = 1;
     } else {
       sharedLanguages = intersectCount(user.languages, mateLangs);
@@ -527,43 +687,150 @@
     };
   }
 
-  function scoreCandidate(features) {
-    let z = MODEL.intercept;
-    const contributions = {};
-    for (const f of MODEL.feature_order) {
-      const coef = MODEL.coefficients[f];
-      const val = features[f];
-      z += coef * val;
-      contributions[f] = coef * (val - MODEL.feature_training_means[f]);
+  // ---------------- Model definitions ----------------
+  // Each model: score(features) -> number (higher = better), explain(features) ->
+  // { contributions: {feature: value} | null, extraHtml }, display(score) -> {num, unit, pill}.
+
+  function linearScore(m, features) {
+    let z = m.intercept;
+    for (const f of m.feature_order) z += m.coefficients[f] * features[f];
+    return z;
+  }
+  function linearContribs(m, features, scale) {
+    const c = {};
+    for (const f of m.feature_order) c[f] = scale * m.coefficients[f] * (features[f] - m.feature_training_means[f]);
+    return c;
+  }
+  function featureArray(features) { return LR.feature_order.map(f => features[f]); }
+
+  const INTEGER_FEATURES = new Set(["age_gap", "shared_languages", "shared_interests", "shared_conversation_preferences", "mate_experience_level_ordinal"]);
+  function describeCondition(f, threshold, wentLeft) {
+    if (f === "gender_match") return wentLeft ? "Mate is not your preferred gender" : "Mate is your preferred gender";
+    if (f === "current_state_match") return wentLeft ? "Different current state" : "Same current state";
+    if (f === "vibe_match") return wentLeft ? "Different vibe" : "Same vibe";
+    if (f === "shared_languages_missing") return wentLeft ? "Language data present" : "Language data missing";
+    if (f === "mate_experience_level_ordinal") {
+      const cut = Math.floor(threshold);
+      return wentLeft ? `Mate is ${EXPERIENCE_NAMES.slice(0, cut + 1).join(" or ")}` : `Mate is ${EXPERIENCE_NAMES.slice(cut + 1).join(" or ")}`;
     }
-    const prob = 1 / (1 + Math.exp(-z));
-    return { z, prob, contributions };
+    if (INTEGER_FEATURES.has(f)) {
+      const cut = Math.floor(threshold);
+      return `${SHORT_CONDITION_LABELS[f]} ${wentLeft ? "&le; " + cut : "&ge; " + (cut + 1)}`;
+    }
+    return `${SHORT_CONDITION_LABELS[f]} ${wentLeft ? "&le;" : "&gt;"} ${threshold.toFixed(2)}`;
+  }
+  function decisionPathHtml(tree, x) {
+    const { path } = TreeShap.predictTree(tree, x);
+    const steps = [];
+    for (let i = 0; i < path.length - 1; i++) {
+      const node = path[i];
+      const f = LR.feature_order[tree.feature[node]];
+      steps.push(`<li>${describeCondition(f, tree.threshold[node], path[i + 1] === tree.left[node])}</li>`);
+    }
+    const leaf = path[path.length - 1];
+    return `<details class="path-rule"><summary>Rule path the tree followed</summary><ol>${steps.join("")}</ol>
+      Leaf: ${Math.round(tree.cover[leaf])} training pairs, ${(tree.value[leaf] * 100).toFixed(0)}% of them high-quality.</details>`;
   }
 
-  function explanationSentence(contributions) {
-    const entries = Object.entries(contributions).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
-    const pos = entries.filter(([, v]) => v > 0).slice(0, 3).map(([f]) => FEATURE_LABELS[f]);
-    const neg = entries.filter(([, v]) => v < 0).slice(0, 2).map(([f]) => FEATURE_LABELS[f]);
-    let html = "";
-    if (pos.length) html += `<div><b>Recommended mainly because of:</b> ${pos.join(", ")}.</div>`;
-    if (neg.length) html += `<div class="neg">Held back slightly by: ${neg.join(", ")}.</div>`;
-    return html || "<div>No single feature stood out for this pair.</div>";
+  function probDisplay(p) {
+    return { num: (p * 100).toFixed(0) + "%", unit: "P(high-quality)", pill: p >= 0.5 ? "good" : "borderline" };
   }
 
-  function contribBarsHtml(contributions) {
-    const entries = Object.entries(contributions).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 5);
-    const maxAbs = Math.max(...entries.map(([, v]) => Math.abs(v)), 0.0001);
-    return entries.map(([f, v]) => {
-      const pct = Math.min(50, (Math.abs(v) / maxAbs) * 50);
-      const cls = v >= 0 ? "pos" : "neg";
-      return `<div class="contrib-row">
-        <span class="contrib-label">${FEATURE_LABELS[f]}</span>
-        <span class="contrib-track"><span class="contrib-fill ${cls}" style="width:${pct}%"></span></span>
-        <span class="contrib-val">${v >= 0 ? "+" : ""}${v.toFixed(2)}</span>
-      </div>`;
-    }).join("");
+  const MODELS = [
+    {
+      key: "lr", name: "Logistic Regression", kind: "ML · linear", color: "--m-lr", file: "demo_model.json", summaryKey: "logistic_regression",
+      desc: "Weighted sum of the 10 features, trained on the composite match-quality target.",
+      score(f) { return linearScore(this.data, f); },
+      explain(f) { return { contributions: linearContribs(this.data, f, 1), digits: 2, extraHtml: "" }; },
+      display(z) { return { num: signed(z, 1), unit: "compat. index", pill: z >= 0 ? "good" : "borderline" }; }
+    },
+    {
+      key: "dt", name: "Decision Tree", kind: "ML · single tree", color: "--m-dt", file: "dt_model.json", summaryKey: "decision_tree",
+      desc: "A depth-5 tree of yes/no questions about the pairing. Easiest model to read; coarse, so ties are common.",
+      score(f) { return TreeShap.predictEnsemble(this.data.trees, featureArray(f)); },
+      explain(f) {
+        const x = featureArray(f);
+        const out = TreeShap.explainEnsemble(this.data.trees, x, x.length);
+        return { contributions: toFeatureMap(out.phi, 100), digits: 1, extraHtml: decisionPathHtml(this.data.trees[0], x) };
+      },
+      display: probDisplay
+    },
+    {
+      key: "rf", name: "Random Forest", kind: "ML · 300 trees", color: "--m-rf", file: "rf_model.json", summaryKey: "random_forest",
+      desc: "Average vote of 300 depth-8 trees (Phase 5 settings), trained on the composite match-quality target.",
+      score(f) { return TreeShap.predictEnsemble(this.data.trees, featureArray(f)); },
+      explain(f) {
+        const x = featureArray(f);
+        const out = TreeShap.explainEnsemble(this.data.trees, x, x.length);
+        return { contributions: toFeatureMap(out.phi, 100), digits: 1, extraHtml: "" };
+      },
+      display: probDisplay
+    },
+    {
+      key: "age", name: "Age only", kind: "Baseline", color: "--m-age", file: null, summaryKey: "age_only",
+      desc: "Phase 4 age-based baseline: smallest age gap wins. Interests, conversation style, vibe and the rest are ignored.",
+      score(f) { return -f.age_gap; },
+      explain(f) {
+        return { contributions: null, extraHtml: `<div class="why">Ranked purely on age: <b>${f.age_gap} year${f.age_gap === 1 ? "" : "s"}</b> apart. Nothing else about the profile was considered.</div>` };
+      },
+      display(s) { return { num: String(-s), unit: "yr age gap", pill: null }; }
+    },
+    {
+      key: "rule", name: "Current rule", kind: "Baseline · reconstructed", color: "--m-rule", file: "rule_model.json", summaryKey: "current_rule",
+      desc: "Stand-in for NoCatch's existing rule-based score, rebuilt as a linear formula. Leans heavily on age.",
+      score(f) { return linearScore(this.data, f); },
+      explain(f) { return { contributions: linearContribs(this.data, f, 100), digits: 1, extraHtml: "" }; },
+      display(s) { return { num: s.toFixed(2), unit: "rule score", pill: null }; }
+    }
+  ];
+  const MODEL_BY_KEY = Object.fromEntries(MODELS.map(m => [m.key, m]));
+
+  function toFeatureMap(phi, scale) {
+    const c = {};
+    LR.feature_order.forEach((f, i) => { c[f] = phi[i] * scale; });
+    return c;
+  }
+  function isAvailable(m) { return m.file === null || m.data != null; }
+
+  // ---------------- Selection state ----------------
+  const STORE_KEY = "matchlab.models";
+  let selected = new Set(MODELS.map(m => m.key));
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (Array.isArray(saved)) selected = new Set(saved.filter(k => MODEL_BY_KEY[k]));
+  } catch (e) { /* storage unavailable -- keep default */ }
+  function saveSelection() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(Array.from(selected))); } catch (e) { /* ignore */ }
+  }
+  function activeModels() { return MODELS.filter(m => selected.has(m.key) && isAvailable(m)); }
+
+  function renderPicker() {
+    const wrap = document.getElementById("model-chips");
+    wrap.innerHTML = "";
+    MODELS.forEach(m => {
+      const ok = isAvailable(m);
+      const label = document.createElement("label");
+      label.className = "model-chip" + (ok ? "" : " unavailable");
+      label.style.setProperty("--mc", `var(${m.color})`);
+      label.title = ok ? m.desc : "Model file failed to load";
+      label.innerHTML = `<input type="checkbox" value="${m.key}" ${selected.has(m.key) && ok ? "checked" : ""} ${ok ? "" : "disabled"}>
+        <span><div class="mc-name">${m.name}</div><div class="mc-kind">${ok ? m.kind : "unavailable"}</div></span>`;
+      label.querySelector("input").addEventListener("change", e => {
+        if (e.target.checked) selected.add(m.key); else selected.delete(m.key);
+        saveSelection();
+        renderAll();
+      });
+      wrap.appendChild(label);
+    });
+  }
+  function setAll(on) {
+    selected = new Set(on ? MODELS.filter(isAvailable).map(m => m.key) : []);
+    saveSelection();
+    renderPicker();
+    renderAll();
   }
 
+  // ---------------- Scoring ----------------
   function readUserProfile() {
     return {
       age: Number(document.getElementById("age").value),
@@ -577,93 +844,240 @@
     };
   }
 
-  let lastScored = [];
+  // Per run: candidates = [{mate, features}], and per model key a ranked list
+  // [{c, score, rank}] plus explanations for the top 3 (computed lazily, cached).
+  let candidates = [];
+  const ranked = {};
+  const explained = {};
 
   function runMatching() {
     const user = readUserProfile();
     const eligible = MATES.filter(m => m.gender === user.preferred_mate_gender);
+    candidates = eligible.map(mate => ({ mate, features: computeFeatures(user, mate) }));
+    for (const m of MODELS) {
+      delete ranked[m.key];
+      delete explained[m.key];
+    }
+    renderAll();
+  }
 
-    const scored = eligible.map(mate => {
-      const features = computeFeatures(user, mate);
-      const { z, prob, contributions } = scoreCandidate(features);
-      return { mate, features, z, prob, contributions };
-    }).sort((a, b) => b.z - a.z);
+  function rankFor(m) {
+    if (!ranked[m.key]) {
+      const list = candidates.map(c => ({ c, score: m.score(c.features) }));
+      // Ties broken by Mate ID so every model's ordering is deterministic.
+      list.sort((a, b) => (b.score - a.score) || a.c.mate.mate_id.localeCompare(b.c.mate.mate_id));
+      list.forEach((r, i) => { r.rank = i + 1; });
+      ranked[m.key] = list;
+      ranked[m.key].byId = Object.fromEntries(list.map(r => [r.c.mate.mate_id, r]));
+    }
+    return ranked[m.key];
+  }
+  function explainTop(m) {
+    if (!explained[m.key]) explained[m.key] = rankFor(m).slice(0, 3).map(r => m.explain(r.c.features));
+    return explained[m.key];
+  }
 
-    lastScored = scored;
-    renderResults(scored.slice(0, 3), eligible.length);
+  // ---------------- Rendering ----------------
+  function explanationSentence(contributions) {
+    const entries = Object.entries(contributions).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
+    const pos = entries.filter(([, v]) => v > 1e-9).slice(0, 3).map(([f]) => FEATURE_LABELS[f]);
+    const neg = entries.filter(([, v]) => v < -1e-9).slice(0, 2).map(([f]) => NEG_LABELS[f]);
+    let html = "";
+    if (pos.length) html += `<div><b>Picked mainly for:</b> ${pos.join(", ")}.</div>`;
+    if (neg.length) html += `<div class="neg">Held back by: ${neg.join(", ")}.</div>`;
+    return html || "<div>No single feature stood out for this pair.</div>";
+  }
+
+  function contribBarsHtml(contributions, digits) {
+    const entries = Object.entries(contributions).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])).slice(0, 4);
+    const maxAbs = Math.max(...entries.map(([, v]) => Math.abs(v)), 0.0001);
+    return entries.map(([f, v]) => {
+      const pct = Math.min(50, (Math.abs(v) / maxAbs) * 50);
+      const cls = v >= 0 ? "pos" : "neg";
+      return `<div class="contrib-row">
+        <span class="contrib-label" title="${FEATURE_LABELS[f]}">${SHORT_LABELS[f]}</span>
+        <span class="contrib-track"><span class="contrib-fill ${cls}" style="width:${pct}%"></span></span>
+        <span class="contrib-val">${signed(v, digits)}</span>
+      </div>`;
+    }).join("");
+  }
+
+  function metricLine(m) {
+    const s = SUMMARY && SUMMARY.models[m.summaryKey];
+    if (!s) return "";
+    const r = s.ranking || s.ranking_original_rule_score;
+    return `Hit@3 <b>${r["Hit@3"].toFixed(3)}</b> &middot; NDCG@5 <b>${r["NDCG@5"].toFixed(3)}</b> on held-out users`;
+  }
+
+  function renderModelBlock(m) {
+    const list = rankFor(m);
+    const top = list.slice(0, 3);
+    const explanations = explainTop(m);
+    const block = document.createElement("section");
+    block.className = "model-block";
+    block.style.setProperty("--mc", `var(${m.color})`);
+
+    let tieNote = "";
+    if (list.length > 3 && list[3].score === list[2].score) {
+      const tied = list.filter(r => r.score === list[2].score).length;
+      tieNote = `<div class="mb-tie">${tied} Mates share the 3rd-place score under this model; ties broken by Mate ID.</div>`;
+    }
+
+    block.innerHTML = `
+      <div class="mb-head">
+        <h3><span class="dot"></span>${m.name}</h3>
+        <span class="mb-metric">${metricLine(m)}</span>
+      </div>
+      <div class="mb-desc">${m.desc}</div>
+      ${tieNote}
+      <div class="mini-cards">${top.map((r, i) => miniCardHtml(m, r, explanations[i], i)).join("")}</div>`;
+    return block;
+  }
+
+  function miniCardHtml(m, r, ex, i) {
+    const d = m.display(r.score);
+    const mate = r.c.mate;
+    return `<div class="mini">
+      <div class="mini-top">
+        <div style="display:flex; gap:10px; min-width:0;">
+          <div class="mini-rank">${i + 1}</div>
+          <div style="min-width:0;">
+            <div class="mate-id">${mate.mate_id}</div>
+            <h4>${mate.age}, ${mate.gender} &middot; ${mate.mate_experience_level}</h4>
+            <div class="meta">${mate.current_state} &middot; ${mate.vibe}</div>
+          </div>
+        </div>
+        <div class="mini-score">
+          <div class="num">${d.num}</div>
+          <div class="unit">${d.unit}</div>
+          ${d.pill ? `<div class="score-pill ${d.pill}">${d.pill === "good" ? "Good match" : "Borderline"}</div>` : ""}
+        </div>
+      </div>
+      <div class="tags">${splitSetArr(mate.interests).slice(0, 3).map(t => `<span class="tag">${t}</span>`).join("")}</div>
+      ${ex.contributions ? `<div class="why">${explanationSentence(ex.contributions)}</div>
+        <div class="contrib-bars">${contribBarsHtml(ex.contributions, ex.digits)}</div>` : ""}
+      ${ex.extraHtml}
+    </div>`;
+  }
+
+  function renderAgreement(models) {
+    const wrap = document.getElementById("agreement");
+    if (models.length < 2) { wrap.className = ""; wrap.innerHTML = ""; return; }
+    const ids = new Map();
+    for (const m of models) {
+      rankFor(m).slice(0, 3).forEach(r => {
+        if (!ids.has(r.c.mate.mate_id)) ids.set(r.c.mate.mate_id, r.c.mate);
+      });
+    }
+    const rows = Array.from(ids.values()).map(mate => {
+      const ranks = models.map(m => rankFor(m).byId[mate.mate_id].rank);
+      const picks = ranks.filter(k => k <= 3).length;
+      return { mate, ranks, picks };
+    }).sort((a, b) => (b.picks - a.picks) || (a.ranks.reduce((s, v) => s + v, 0) - b.ranks.reduce((s, v) => s + v, 0)));
+
+    wrap.className = "panel agree-wrap";
+    wrap.innerHTML = `
+      <h3>Where the models agree</h3>
+      <div class="sub">Every Mate that made at least one selected model's top 3, with its rank under each model (numbered circle = in that model's top 3).</div>
+      <div style="overflow-x:auto;">
+      <table class="agree">
+        <thead><tr><th>Mate</th>${models.map(m => `<th style="--mc:var(${m.color})"><span class="dot"></span> ${m.name}</th>`).join("")}<th>Top-3 picks</th></tr></thead>
+        <tbody>${rows.map(row => `<tr>
+          <td><div class="mid">${row.mate.mate_id}</div><div class="msub">${row.mate.age}, ${row.mate.gender} &middot; ${row.mate.mate_experience_level}</div></td>
+          ${row.ranks.map((k, j) => k <= 3
+            ? `<td><span class="rank-pip" style="--mc:var(${models[j].color})">${k}</span></td>`
+            : `<td class="mono" style="color:var(--muted)">#${k}</td>`).join("")}
+          <td class="consensus ${row.picks === models.length ? "all" : ""}">${row.picks}/${models.length}</td>
+        </tr>`).join("")}</tbody>
+      </table></div>`;
+  }
+
+  function renderMetricsTable() {
+    const table = document.getElementById("metrics-table");
+    if (!SUMMARY) { table.innerHTML = ""; return; }
+    table.innerHTML = `<thead><tr><th>Model</th><th>Hit@3</th><th>Hit@5</th><th>NDCG@5</th><th>MRR</th></tr></thead>
+      <tbody>${MODELS.map(m => {
+        const s = SUMMARY.models[m.summaryKey];
+        if (!s) return "";
+        const r = s.ranking || s.ranking_original_rule_score;
+        return `<tr class="${selected.has(m.key) ? "" : "off"}"><td><span class="dot" style="--mc:var(${m.color})"></span> ${m.name}</td>
+          <td>${fmt3(r["Hit@3"])}</td><td>${fmt3(r["Hit@5"])}</td><td>${fmt3(r["NDCG@5"])}</td><td>${fmt3(r["MRR"])}</td></tr>`;
+      }).join("")}</tbody>`;
+  }
+
+  function renderAll() {
+    const models = activeModels();
+    document.getElementById("results-sub").textContent = candidates.length
+      ? `${candidates.length} candidates match your preferred gender (Business Rule BR-1 applied first) · ${models.length} model${models.length === 1 ? "" : "s"} selected.`
+      : "No Mates match that gender preference in this synthetic pool.";
+
+    const blocks = document.getElementById("model-blocks");
+    blocks.innerHTML = "";
+    if (!models.length) {
+      blocks.innerHTML = `<div class="empty-note">Tick at least one model above to see its top 3.</div>`;
+    } else if (candidates.length) {
+      models.forEach(m => blocks.appendChild(renderModelBlock(m)));
+    }
+    renderAgreement(candidates.length ? models : []);
+    renderMetricsTable();
     renderSheet();
   }
 
-  function renderResults(top3, poolSize) {
-    document.getElementById("results-sub").textContent =
-      `Ranked from ${poolSize} candidates matching your preferred gender (Business Rule BR-1 applied first).`;
-
-    const wrap = document.getElementById("results-cards");
-    wrap.innerHTML = "";
-    if (!top3.length) {
-      wrap.innerHTML = `<div class="empty-note">No Mates match that gender preference in this synthetic pool.</div>`;
-      return;
-    }
-    top3.forEach((r, i) => {
-      const good = r.z >= 0;
-      const el = document.createElement("div");
-      el.className = "card";
-      el.innerHTML = `
-        <div class="rank-badge">${i + 1}</div>
-        <div class="card-main">
-          <div class="mate-id">${r.mate.mate_id}</div>
-          <h3>${r.mate.age}, ${r.mate.gender} &middot; ${r.mate.mate_experience_level}</h3>
-          <div class="meta">${r.mate.current_state} &middot; ${r.mate.vibe}</div>
-          <div class="tags">
-            ${splitSetArr(r.mate.interests).slice(0, 4).map(t => `<span class="tag">${t}</span>`).join("")}
-          </div>
-          <div class="why">${explanationSentence(r.contributions)}</div>
-          <div class="contrib-bars">${contribBarsHtml(r.contributions)}</div>
-        </div>
-        <div class="score-block">
-          <div class="score-num">${r.z >= 0 ? "+" : ""}${r.z.toFixed(1)}</div>
-          <div class="hint" style="margin-bottom:6px;">compatibility index</div>
-          <div class="score-pill ${good ? "good" : "borderline"}">${good ? "Good match" : "Borderline"}</div>
-        </div>
-      `;
-      wrap.appendChild(el);
-    });
-  }
-
-  function splitSetArr(v) { return Array.from(splitSet(v)); }
-
+  // ---------------- Sheet ----------------
   let sheetShowAll = false;
 
   function renderSheet() {
-    const body = document.getElementById("sheet-body");
-    const top3Ids = new Set(lastScored.slice(0, 3).map(r => r.mate.mate_id));
-    const rows = sheetShowAll ? lastScored : lastScored.slice(0, 10);
-    document.getElementById("sheet-sub").textContent =
-      `${lastScored.length} eligible candidates, ranked by compatibility index. ${sheetShowAll ? "Showing all." : "Showing top 10."} Top 3 highlighted.`;
+    const models = activeModels();
+    const sortSel = document.getElementById("sheet-sort");
+    const prev = sortSel.value;
+    sortSel.innerHTML = models.map(m => `<option value="${m.key}">${m.name}</option>`).join("");
+    if (models.some(m => m.key === prev)) sortSel.value = prev;
 
-    body.innerHTML = rows.map((r, i) => {
-      const isTop3 = top3Ids.has(r.mate.mate_id);
-      return `<tr class="${isTop3 ? "top3" : ""}">
-        <td>${isTop3 ? "&#9733; " + (i + 1) : i + 1}</td>
-        <td class="mono">${r.mate.mate_id}</td>
-        <td class="num">${r.mate.age}</td>
-        <td>${r.mate.gender}</td>
-        <td class="small">${r.mate.languages}</td>
-        <td class="small">${r.mate.interests}</td>
-        <td class="small">${r.mate.conversation_preferences}</td>
-        <td class="small">${r.mate.current_state}</td>
-        <td class="small">${r.mate.vibe}</td>
-        <td class="small">${r.mate.mate_experience_level}</td>
-        <td class="num mono">${r.z >= 0 ? "+" : ""}${r.z.toFixed(1)}</td>
+    const head = document.getElementById("sheet-head");
+    head.innerHTML = `<tr><th>Mate ID</th><th>Age</th><th>Gender</th><th>Languages</th><th>Interests</th>
+      <th>Conversation prefs</th><th>State</th><th>Vibe</th><th>Level</th>
+      ${models.map(m => `<th style="text-align:center; --mc:var(${m.color})"><span class="dot"></span> ${m.name} rank</th>`).join("")}</tr>`;
+
+    const body = document.getElementById("sheet-body");
+    const sub = document.getElementById("sheet-sub");
+    if (!models.length || !candidates.length) {
+      body.innerHTML = "";
+      sub.textContent = `${candidates.length} eligible candidates · pick a model to rank them.`;
+      return;
+    }
+    const sortModel = MODEL_BY_KEY[sortSel.value] || models[0];
+    const list = rankFor(sortModel);
+    const rows = sheetShowAll ? list : list.slice(0, 10);
+    sub.textContent = `${list.length} eligible candidates, sorted by ${sortModel.name}. ${sheetShowAll ? "Showing all." : "Showing top 10."} Bold rank = in that model's top 3.`;
+
+    body.innerHTML = rows.map(r => {
+      const mate = r.c.mate;
+      return `<tr>
+        <td class="mono">${mate.mate_id}</td>
+        <td class="num">${mate.age}</td>
+        <td>${mate.gender}</td>
+        <td class="small">${mate.languages}</td>
+        <td class="small">${mate.interests}</td>
+        <td class="small">${mate.conversation_preferences}</td>
+        <td class="small">${mate.current_state}</td>
+        <td class="small">${mate.vibe}</td>
+        <td class="small">${mate.mate_experience_level}</td>
+        ${models.map(m => {
+          const k = rankFor(m).byId[mate.mate_id].rank;
+          return `<td class="rk ${k <= 3 ? "hit" : ""}" style="--mc:var(${m.color})">${k <= 3 ? "&#9733; " : ""}${k}</td>`;
+        }).join("")}
       </tr>`;
     }).join("");
   }
 
+  document.getElementById("sheet-sort").addEventListener("change", renderSheet);
   document.getElementById("sheet-toggle-btn").addEventListener("click", function () {
     sheetShowAll = !sheetShowAll;
-    this.textContent = sheetShowAll ? "Show top 10 only" : "Show all 120 rows";
+    this.textContent = sheetShowAll ? "Show top 10 only" : "Show all rows";
     renderSheet();
   });
+  document.getElementById("pick-all").addEventListener("click", () => setAll(true));
+  document.getElementById("pick-none").addEventListener("click", () => setAll(false));
 
   document.getElementById("profile-form").addEventListener("submit", function (e) {
     e.preventDefault();
@@ -683,27 +1097,26 @@
   }
 
   async function boot() {
+    const getJson = url => fetch(url).then(r => { if (!r.ok) throw new Error(url + " " + r.status); return r.json(); });
     try {
-      const [mates, model] = await Promise.all([
-        fetch("mates_data.json").then(r => r.json()),
-        fetch("demo_model.json").then(r => r.json())
-      ]);
-      MATES = mates;
-      MODEL = model;
-      // Standard 50% decision boundary for a binary classifier. Not the same
-      // number as composite_binary_threshold (0.139) -- that's the cutoff on
-      // the raw composite_target scale used to LABEL training rows as
-      // "good"/"not good" before training; this model's OUTPUT is a
-      // probability that a row carries that label, so 0.5 is the correct
-      // threshold to compare it against, not 0.139.
-      MODEL.composite_binary_threshold_as_prob = 0.5;
-
-      seedExampleProfile();
-      runMatching();
+      [MATES, LR] = await Promise.all([getJson("mates_data.json"), getJson("demo_model.json")]);
     } catch (err) {
-      document.getElementById("results-cards").innerHTML =
+      document.getElementById("model-blocks").innerHTML =
         `<div class="empty-note">Could not load the Mates data or model file. (${err.message})</div>`;
+      return;
     }
+    MODEL_BY_KEY.lr.data = LR;
+    // Optional extras: a model whose file fails to load is shown as unavailable, the rest still work.
+    const extras = MODELS.filter(m => m.file && m.key !== "lr");
+    const results = await Promise.allSettled([getJson("comparison_summary.json"), ...extras.map(m => getJson(m.file))]);
+    if (results[0].status === "fulfilled") SUMMARY = results[0].value;
+    extras.forEach((m, i) => { if (results[i + 1].status === "fulfilled") m.data = results[i + 1].value; });
+    const rule = MODEL_BY_KEY.rule.data;
+    if (rule) document.getElementById("rule-r2").textContent = rule.reconstruction_test_r2.toFixed(2);
+
+    seedExampleProfile();
+    renderPicker();
+    runMatching();
   }
 
   boot();

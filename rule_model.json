@@ -1,0 +1,42 @@
+{
+  "model": "Current rule -- linear reconstruction of existing_rule_score (OLS on the 10 profile features, training rows only)",
+  "feature_order": [
+    "age_gap",
+    "age_score",
+    "gender_match",
+    "shared_languages",
+    "shared_interests",
+    "shared_conversation_preferences",
+    "current_state_match",
+    "vibe_match",
+    "mate_experience_level_ordinal",
+    "shared_languages_missing"
+  ],
+  "coefficients": {
+    "age_gap": -0.001220480093848884,
+    "age_score": 0.3557645131310586,
+    "gender_match": 0.14522944841428984,
+    "shared_languages": 0.03373926699528022,
+    "shared_interests": 0.02986921928196863,
+    "shared_conversation_preferences": 0.04197490905875115,
+    "current_state_match": 0.0459609584009696,
+    "vibe_match": 0.0455122718630055,
+    "mate_experience_level_ordinal": 0.02318172227201136,
+    "shared_languages_missing": 0.014956079746446003
+  },
+  "intercept": 0.08792763121644964,
+  "feature_training_means": {
+    "age_gap": 3.546014917093016,
+    "age_score": 0.6682486593108551,
+    "gender_match": 0.7891265487271159,
+    "shared_languages": 1.5055168587807435,
+    "shared_interests": 1.3720027121987302,
+    "shared_conversation_preferences": 1.1113850705788078,
+    "current_state_match": 0.1699439067989891,
+    "vibe_match": 0.1279664673611539,
+    "mate_experience_level_ordinal": 1.1521913332922393,
+    "shared_languages_missing": 0.03834062750416076
+  },
+  "reconstruction_test_r2": 0.8178438517246989,
+  "reconstruction_test_mae": 0.040535039330414496
+}

@@ -1,11 +1,30 @@
 # NoCatch Match Lab
 
-A live, in-browser demo of NoCatch's compatibility model: fill in a profile (the same onboarding questions NoCatch asks a new user), and see which 3 Mates a trained model ranks highest, with the reasoning behind each pick.
+A live, in-browser demo of NoCatch's compatibility models: fill in a profile (the same onboarding questions NoCatch asks a new user), tick which models to compare, and see the 3 Mates each one ranks highest, with the reasoning behind each pick.
 
 Part of the SCI701 dissertation project "NoCatch: A Machine-Learning-Based Matchmaking System."
 
-- **Model:** Logistic Regression, trained on the project's staged/composite outcome target, without `existing_rule_score` (an Ablation A variant).
-- **Data:** `NoCatch_Synthetic_Dataset_v3.xlsx` — synthetic data only, no real users.
-- **Explanations:** the linear-model closed-form SHAP decomposition (`coefficient x (value - training mean)`) for each candidate pairing — exact, not approximated.
+## Models
+
+| Model | Type | Scores by | "Why" explanation |
+|---|---|---|---|
+| Logistic Regression | ML | compatibility index (logit) | closed-form linear SHAP: `coefficient x (value - training mean)` |
+| Decision Tree (depth 5) | ML | P(high-quality match) | exact TreeSHAP + the rule path the tree followed |
+| Random Forest (300 trees) | ML | P(high-quality match) | exact TreeSHAP, averaged over trees |
+| Age only | Baseline | smallest age gap | n/a (age is the only input) |
+| Current rule (reconstructed) | Baseline | linear reconstruction of `existing_rule_score` | linear contributions |
+
+- All three ML models are trained on the project's staged/composite outcome target, **without** `existing_rule_score` (Ablation A variant), because that score can't be computed for a brand-new profile.
+- "Current rule" is a least-squares reconstruction of the synthetic `existing_rule_score` from the same 10 features (held-out R² ≈ 0.82). Its ranking numbers in the page are for the original rule score.
+- Held-out ranking metrics (user-level test split, booking outcome) are in `comparison_summary.json`.
+- TreeSHAP runs in the browser (`tree_shap.js`). `node test_tree_shap.js` checks it against the Python `shap` library (`shap_reference.json`).
+
+## Files
+
+- `index.html` – the app (open via any static server, e.g. GitHub Pages)
+- `mates_data.json` – candidate Mates
+- `demo_model.json`, `dt_model.json`, `rf_model.json`, `rule_model.json` – exported models (from `nocatch_ml/phase7_prototype/export_demo_model.py` and `export_comparison_models.py`)
+
+**Data:** `NoCatch_Synthetic_Dataset_v3.xlsx` — synthetic data only, no real users.
 
 This is an illustrative research prototype, not a live production system.
