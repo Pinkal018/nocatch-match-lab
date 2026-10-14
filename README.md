@@ -79,4 +79,7 @@ The model files are exported by three scripts in the project's analysis code (`C
 
 This is a research prototype, not NoCatch's live system.
 
+AI acknowledgement: Claude helped write code and documents in this repo. The project design, analysis and explanations are mine, and AI use is acknowledged in my SCI701 report.
+
 Pinkal Makwana (1211769), University of the Sunshine Coast, SCI701, Trimester 2 2026
+
