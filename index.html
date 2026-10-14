@@ -297,14 +297,17 @@
   /* ---------- Model picker ---------- */
   :root {
     --m-lr: #e8536f; --m-dt: #7a5bd0; --m-rf: #2d8c82; --m-age: #b97a1a; --m-rule: #5d6b82;
+    --m-svm: #3567c9; --m-knn: #5f8a2e; --m-km: #b5487c;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --m-lr: #ff6b85; --m-dt: #a98cf0; --m-rf: #4fbfb0; --m-age: #e2b566; --m-rule: #9aa8c0;
+      --m-svm: #7fa6f0; --m-knn: #9cc46a; --m-km: #e48ab4;
     }
   }
   :root[data-theme="dark"] {
     --m-lr: #ff6b85; --m-dt: #a98cf0; --m-rf: #4fbfb0; --m-age: #e2b566; --m-rule: #9aa8c0;
+      --m-svm: #7fa6f0; --m-knn: #9cc46a; --m-km: #e48ab4;
   }
 
   .picker { margin-bottom: 22px; }
@@ -383,6 +386,10 @@
   .path-rule summary { cursor: pointer; color: var(--ink-soft); font-weight: 600; }
   .path-rule ol { margin: 6px 0 0; padding-left: 18px; }
   .path-rule li { margin-bottom: 2px; }
+  .bars-title { margin-top: 10px; font-size: 11px; color: var(--muted); font-family: 'IBM Plex Mono', monospace; text-transform: uppercase; letter-spacing: 0.04em; }
+  .bars-title + .contrib-bars { margin-top: 4px; }
+  .nb-ok { color: var(--accent-2); font-weight: 700; }
+  .nb-no { color: var(--amber); font-weight: 700; }
 
   table.mtable { border-collapse: collapse; width: 100%; margin-top: 8px; font-size: 12px; }
   table.mtable th, table.mtable td { padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: right; }
@@ -414,7 +421,7 @@
       <p class="lede">Fill in the same onboarding questions NoCatch asks a new user, pick which models to compare, and see the 3 Mates each one ranks highest &mdash; with the exact reasoning behind each pick.</p>
     </div>
     <div class="status-strip">
-      <span>MODELS &middot; <b>3 ML + 2 baselines</b></span>
+      <span>MODELS &middot; <b>6 ML + 2 baselines</b></span>
       <span>ML TARGET &middot; <b>composite quality score</b></span>
       <span>FEATURES &middot; <b>10</b>, no rule score</span>
       <span>CANDIDATE POOL &middot; <b>120 Mates</b></span>
@@ -508,6 +515,9 @@
         <ul>
           <li><b>Logistic Regression</b> (composite target, Phase 5a&ndash;6) scores each candidate as <span class="mono">intercept + &Sigma; coefficient &times; feature value</span>, shown as the <b>compatibility index</b> (0 = decision boundary). Bars: <span class="mono">coefficient &times; (value &minus; training mean)</span>, the closed-form SHAP value for a linear model. It's shown as an index, not a probability, because this model separates the data almost perfectly (held-out ROC-AUC &asymp; 0.9995), so its probabilities saturate near 100% and hide real differences between candidates. That's expected: the composite target was itself built from earlier-stage models on very similar features.</li>
           <li><b>Decision Tree</b> and <b>Random Forest</b> (same target and features) give the probability of a high-quality match. Bars are exact <b>TreeSHAP</b> values in percentage points, computed in your browser with the same algorithm as <span class="mono">shap.TreeExplainer</span> (checked against it to within 10<sup>&minus;6</sup>). The Decision Tree is shallow (depth 5), so you can also read the exact rule path it followed. Because it has few leaves, many Mates tie; ties are broken by Mate ID.</li>
+          <li><b>SVM</b> (RBF kernel, standardised features, same target) ranks by its <b>margin</b>: the signed distance from the decision boundary (0 = boundary, positive = high-quality side). Like Logistic Regression it separates the data almost perfectly (held-out ROC-AUC &asymp; 0.9996), so the margin is shown rather than a saturated probability. Bars are exact <b>Shapley values</b> of the margin against an average training pair (all 2<sup>10</sup> feature combinations evaluated in your browser; checked against <span class="mono">shap.KernelExplainer</span>). Age gap and age score always move together in real data, so their two bars are best read as one.</li>
+          <li><b>k-Nearest Neighbours</b> looks up the <span class="mono" id="knn-k">k</span> past pairings (training data) most similar to this one and reports the share that were high-quality. <i>k</i> was picked by cross-validation on training users only. The explanation is the neighbours themselves: open "Closest past pairings" on a card.</li>
+          <li><b>k-means</b> is <b>unsupervised</b>: it grouped the training pairings into <span class="mono" id="km-k">k</span> clusters by their 10 features alone, without seeing outcomes (number of clusters picked by silhouette score). Each cluster's score is the share of its training pairings that turned out high-quality, so every Mate in the same cluster gets the same score and ties are common (broken by Mate ID). Bars show what makes the cluster different from an average pairing, in standard deviations.</li>
           <li><b>Age only</b> is the Phase 4 age-based baseline: smallest age gap first, nothing else considered.</li>
           <li><b>Current rule</b> stands in for NoCatch's existing rule-based score (<span class="mono">existing_rule_score</span>). Its exact formula isn't available, so this demo uses a linear <b>reconstruction</b> fitted to it from the same 10 features (held-out R&sup2; <span class="mono" id="rule-r2">&mdash;</span>). The ranking numbers below are for the original rule score.</li>
         </ul>
@@ -548,6 +558,7 @@
 </div>
 
 <script src="tree_shap.js"></script>
+<script src="extra_models.js"></script>
 <script>
 (function () {
   "use strict";
@@ -767,6 +778,30 @@
       display: probDisplay
     },
     {
+      key: "svm", name: "SVM", kind: "ML · RBF kernel", color: "--m-svm", file: "svm_model.json", summaryKey: "svm",
+      desc: "Support Vector Machine with an RBF kernel: finds the boundary that best separates high- from lower-quality pairings in the 10-feature space.",
+      score(f) { return ExtraModels.svmDecision(this.data, featureArray(f)); },
+      explain(f) {
+        const out = ExtraModels.baselineShapley(v => ExtraModels.svmDecision(this.data, v), featureArray(f), this.means);
+        return { contributions: toFeatureMap(out.phi, 1), digits: 2, extraHtml: "" };
+      },
+      display(z) { return { num: signed(z, 2), unit: "SVM margin", pill: z >= 0 ? "good" : "borderline" }; }
+    },
+    {
+      key: "knn", name: "k-Nearest Neighbours", kind: "ML · instance-based", color: "--m-knn", file: "knn_model.json", summaryKey: "knn",
+      desc: "Finds the most similar past pairings in the training data and scores by how many of them were high-quality. No formula is learned.",
+      score(f) { return ExtraModels.knnNeighbours(this.data, featureArray(f)).score; },
+      explain(f) { return { contributions: null, extraHtml: knnExplainHtml(this.data, f) }; },
+      display: probDisplay
+    },
+    {
+      key: "km", name: "k-means clustering", kind: "ML · unsupervised", color: "--m-km", file: "kmeans_model.json", summaryKey: "kmeans",
+      desc: "Groups pairings into clusters of similar ones without looking at outcomes, then scores each cluster by how often its pairings worked out.",
+      score(f) { return ExtraModels.kmeansAssign(this.data, featureArray(f)).score; },
+      explain(f) { return { contributions: null, extraHtml: clusterExplainHtml(this.data, f) }; },
+      display: probDisplay
+    },
+    {
       key: "age", name: "Age only", kind: "Baseline", color: "--m-age", file: null, summaryKey: "age_only",
       desc: "Phase 4 age-based baseline: smallest age gap wins. Interests, conversation style, vibe and the rest are ignored.",
       score(f) { return -f.age_gap; },
@@ -790,10 +825,68 @@
     LR.feature_order.forEach((f, i) => { c[f] = phi[i] * scale; });
     return c;
   }
+  function pairSummary(x) {
+    const v = Object.fromEntries(LR.feature_order.map((f, i) => [f, x[i]]));
+    const parts = [`${v.age_gap} yr gap`, `${v.shared_interests} interest${v.shared_interests === 1 ? "" : "s"}`,
+      `${v.shared_conversation_preferences} conv.`, v.shared_languages_missing ? "lang. ?" : `${v.shared_languages} lang.`];
+    if (!v.gender_match) parts.push("not pref. gender");
+    if (v.current_state_match) parts.push("same state");
+    if (v.vibe_match) parts.push("same vibe");
+    parts.push(EXPERIENCE_NAMES[v.mate_experience_level_ordinal]);
+    return parts.join(" &middot; ");
+  }
+
+  function knnExplainHtml(m, f) {
+    const nb = ExtraModels.knnNeighbours(m, featureArray(f));
+    const pos = Math.round(nb.score * m.k);
+    const exact = nb.distances.filter(d => d < 1e-6).length;
+    const list = nb.neighbours.slice(0, 5).map((i, j) =>
+      `<li>${pairSummary(m.train_X[i])} &rarr; ${m.train_y[i] ? '<span class="nb-ok">high-quality</span>' : '<span class="nb-no">lower</span>'}
+        <span class="mono">(dist ${nb.distances[j].toFixed(2)})</span></li>`).join("");
+    return `<div class="why">Of the <b>${m.k}</b> most similar past pairings, <b>${pos}</b> were high-quality.
+        ${exact ? `<span class="neg">${exact} of them had exactly the same feature values as this pair.</span>` : ""}</div>
+      <details class="path-rule"><summary>Closest past pairings</summary>
+        <div style="margin-top:6px;">This pair: ${pairSummary(featureArray(f))}</div><ol>${list}</ol></details>`;
+  }
+
+  const CLUSTER_HIGH = {
+    age_gap: "bigger age gaps", age_score: "close in age", gender_match: "preferred gender",
+    shared_languages: "more shared languages", shared_interests: "more shared interests",
+    shared_conversation_preferences: "more shared conversation style", current_state_match: "same current state",
+    vibe_match: "same vibe", mate_experience_level_ordinal: "more experienced Mates", shared_languages_missing: "missing language data"
+  };
+  const CLUSTER_LOW = {
+    age_gap: "small age gaps", age_score: "wider age gaps", gender_match: "not the preferred gender",
+    shared_languages: "few shared languages", shared_interests: "few shared interests",
+    shared_conversation_preferences: "little shared conversation style", current_state_match: "different current states",
+    vibe_match: "different vibes", mate_experience_level_ordinal: "newer Mates", shared_languages_missing: "language data present"
+  };
+
+  function clusterExplainHtml(m, f) {
+    const a = ExtraModels.kmeansAssign(m, featureArray(f));
+    const centroid = m.centroids_raw[a.cluster];
+    // How far the cluster centre sits from an average training pair, in SDs.
+    const z = {};
+    LR.feature_order.forEach((feat, i) => { z[feat] = (centroid[i] - m.feature_training_means[feat]) / m.feature_training_std[feat]; });
+    const ordered = Object.entries(z).sort((p, q) => Math.abs(q[1]) - Math.abs(p[1]));
+    // age_score mirrors age_gap, so don't describe the cluster by both.
+    const usedAgeGap = ordered.slice(0, 3).some(([g]) => g === "age_gap");
+    // Only name traits at least half an SD from average; smaller shifts aren't what sets the cluster apart.
+    const traits = ordered.filter(([feat, v]) => Math.abs(v) >= 0.5 && !(feat === "age_score" && usedAgeGap))
+      .slice(0, 3).map(([feat, v]) => v >= 0 ? CLUSTER_HIGH[feat] : CLUSTER_LOW[feat]);
+    const place = m.cluster_high_quality_rate.filter(r => r > a.score).length + 1;
+    const traitText = traits.length ? `pairings with ${traits.join(", ")}` : "pairings close to the average on every feature";
+    return `<div class="why">Falls in <b>cluster ${a.cluster + 1} of ${m.k}</b>: ${traitText}.
+        <b>${(a.score * 100).toFixed(0)}%</b> of its ${m.cluster_size[a.cluster].toLocaleString()} training pairings were high-quality
+        (${place === 1 ? "the best cluster" : "cluster rank " + place + " of " + m.k}).</div>
+      <div class="bars-title">What defines this cluster (SDs from average)</div>
+      <div class="contrib-bars">${contribBarsHtml(z, 1)}</div>`;
+  }
+
   function isAvailable(m) { return m.file === null || m.data != null; }
 
   // ---------------- Selection state ----------------
-  const STORE_KEY = "matchlab.models";
+  const STORE_KEY = "matchlab.models.v2";
   let selected = new Set(MODELS.map(m => m.key));
   try {
     const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
@@ -1113,6 +1206,10 @@
     extras.forEach((m, i) => { if (results[i + 1].status === "fulfilled") m.data = results[i + 1].value; });
     const rule = MODEL_BY_KEY.rule.data;
     if (rule) document.getElementById("rule-r2").textContent = rule.reconstruction_test_r2.toFixed(2);
+    const svm = MODEL_BY_KEY.svm;
+    if (svm.data) svm.means = svm.data.feature_order.map(f => svm.data.feature_training_means[f]);
+    if (MODEL_BY_KEY.knn.data) document.getElementById("knn-k").textContent = MODEL_BY_KEY.knn.data.k;
+    if (MODEL_BY_KEY.km.data) document.getElementById("km-k").textContent = MODEL_BY_KEY.km.data.k;
 
     seedExampleProfile();
     renderPicker();
