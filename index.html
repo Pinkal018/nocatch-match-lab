@@ -513,19 +513,19 @@
       <div class="method-note">
         <b>Where these numbers come from</b>
         <ul>
-          <li><b>Logistic Regression</b> (composite target, Phase 5a&ndash;6) scores each candidate as <span class="mono">intercept + &Sigma; coefficient &times; feature value</span>, shown as the <b>compatibility index</b> (0 = decision boundary). Bars: <span class="mono">coefficient &times; (value &minus; training mean)</span>, the closed-form SHAP value for a linear model. It's shown as an index, not a probability, because this model separates the data almost perfectly (held-out ROC-AUC &asymp; 0.9995), so its probabilities saturate near 100% and hide real differences between candidates. That's expected: the composite target was itself built from earlier-stage models on very similar features.</li>
+          <li><b>Logistic Regression</b> (trained on the staged match-quality target) scores each candidate as <span class="mono">intercept + &Sigma; coefficient &times; feature value</span>, shown as the <b>compatibility index</b> (0 = decision boundary). Bars: <span class="mono">coefficient &times; (value &minus; training mean)</span>, the closed-form SHAP value for a linear model. It's shown as an index, not a probability, because this model separates the data almost perfectly (held-out ROC-AUC &asymp; 0.9995), so its probabilities saturate near 100% and hide real differences between candidates. That's expected: the composite target was itself built from earlier-stage models on very similar features.</li>
           <li><b>Decision Tree</b> and <b>Random Forest</b> (same target and features) give the probability of a high-quality match. Bars are exact <b>TreeSHAP</b> values in percentage points, computed in your browser with the same algorithm as <span class="mono">shap.TreeExplainer</span> (checked against it to within 10<sup>&minus;6</sup>). The Decision Tree is shallow (depth 5), so you can also read the exact rule path it followed. Because it has few leaves, many Mates tie; ties are broken by Mate ID.</li>
           <li><b>SVM</b> (RBF kernel, standardised features, same target) ranks by its <b>margin</b>: the signed distance from the decision boundary (0 = boundary, positive = high-quality side). Like Logistic Regression it separates the data almost perfectly (held-out ROC-AUC &asymp; 0.9996), so the margin is shown rather than a saturated probability. Bars are exact <b>Shapley values</b> of the margin against an average training pair (all 2<sup>10</sup> feature combinations evaluated in your browser; checked against <span class="mono">shap.KernelExplainer</span>). Age gap and age score always move together in real data, so their two bars are best read as one.</li>
           <li><b>k-Nearest Neighbours</b> looks up the <span class="mono" id="knn-k">k</span> past pairings (training data) most similar to this one and reports the share that were high-quality. <i>k</i> was picked by cross-validation on training users only. The explanation is the neighbours themselves: open "Closest past pairings" on a card.</li>
           <li><b>k-means</b> is <b>unsupervised</b>: it grouped the training pairings into <span class="mono" id="km-k">k</span> clusters by their 10 features alone, without seeing outcomes (number of clusters picked by silhouette score). Each cluster's score is the share of its training pairings that turned out high-quality, so every Mate in the same cluster gets the same score and ties are common (broken by Mate ID). Bars show what makes the cluster different from an average pairing, in standard deviations.</li>
-          <li><b>Age only</b> is the Phase 4 age-based baseline: smallest age gap first, nothing else considered.</li>
+          <li><b>Age only</b> is the age-based baseline: smallest age gap first, nothing else considered.</li>
           <li><b>Current rule</b> stands in for NoCatch's existing rule-based score (<span class="mono">existing_rule_score</span>). Its exact formula isn't available, so this demo uses a linear <b>reconstruction</b> fitted to it from the same 10 features (held-out R&sup2; <span class="mono" id="rule-r2">&mdash;</span>). The ranking numbers below are for the original rule score.</li>
         </ul>
-        <div style="margin-top:10px;"><b>Held-out ranking quality</b> (user-level test split, booking outcome &mdash; same setup as the Phase 4 / 5b tables):</div>
+        <div style="margin-top:10px;"><b>Held-out ranking quality</b> (user-level test split, booking outcome &mdash; same setup as the results tables in the project report):</div>
         <table class="mtable" id="metrics-table"></table>
         <div style="margin-top:10px;">
           None of the ML models use <span class="mono">existing_rule_score</span>, because it can't be computed for a person who isn't already in NoCatch's historical data.
-          As a brand-new profile, you'd be a <b>cold-start user</b> in the real system (Blueprint &sect;13), routed to the content-similarity fallback; this demo runs the full models anyway, for illustration.
+          As a brand-new profile, you'd be a <b>cold-start user</b> in the real system, routed to the content-similarity fallback; this demo runs the full models anyway, for illustration.
         </div>
       </div>
     </div>
@@ -768,7 +768,7 @@
     },
     {
       key: "rf", name: "Random Forest", kind: "ML · 300 trees", color: "--m-rf", file: "rf_model.json", summaryKey: "random_forest",
-      desc: "Average vote of 300 depth-8 trees (Phase 5 settings), trained on the composite match-quality target.",
+      desc: "Average vote of 300 depth-8 trees (same settings as the main analysis), trained on the composite match-quality target.",
       score(f) { return TreeShap.predictEnsemble(this.data.trees, featureArray(f)); },
       explain(f) {
         const x = featureArray(f);
@@ -803,7 +803,7 @@
     },
     {
       key: "age", name: "Age only", kind: "Baseline", color: "--m-age", file: null, summaryKey: "age_only",
-      desc: "Phase 4 age-based baseline: smallest age gap wins. Interests, conversation style, vibe and the rest are ignored.",
+      desc: "Age-based baseline: smallest age gap wins. Interests, conversation style, vibe and the rest are ignored.",
       score(f) { return -f.age_gap; },
       explain(f) {
         return { contributions: null, extraHtml: `<div class="why">Ranked purely on age: <b>${f.age_gap} year${f.age_gap === 1 ? "" : "s"}</b> apart. Nothing else about the profile was considered.</div>` };

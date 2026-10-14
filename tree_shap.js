@@ -1,6 +1,6 @@
 // Tree prediction + exact path-dependent TreeSHAP (Lundberg et al. 2018,
 // Algorithm 2) for the flat-array trees exported by
-// nocatch_ml/phase7_prototype/export_comparison_models.py.
+// Code_and_Analysis/Match_Lab_Scripts/export_comparison_models.py.
 // Same algorithm shap.TreeExplainer uses; checked against it in test_tree_shap.js.
 (function (root) {
   "use strict";

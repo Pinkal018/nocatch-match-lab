@@ -1,5 +1,5 @@
 // SVM (RBF), k-Nearest Neighbours and k-means scoring for the models exported by
-// nocatch_ml/phase7_prototype/export_extra_models.py, plus exact baseline Shapley
+// Code_and_Analysis/Match_Lab_Scripts/export_extra_models.py, plus exact baseline Shapley
 // values for any scoring function. Checked against Python in test_extra_models.js.
 (function (root) {
   "use strict";
