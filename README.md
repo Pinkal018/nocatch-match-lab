@@ -2,7 +2,7 @@
 
 A live, in-browser demo of NoCatch's compatibility models: fill in a profile (the same onboarding questions NoCatch asks a new user), tick which models to compare, and see the 3 Mates each one ranks highest, with the reasoning behind each pick.
 
-Part of the SCI701 dissertation project "NoCatch: A Machine-Learning-Based Matchmaking System."
+ "NoCatch: A Machine-Learning-Based Matchmaking System."
 
 ## Models
 
